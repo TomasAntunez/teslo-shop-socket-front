@@ -4,5 +4,6 @@ export interface OnNewClients {
 }
 
 export interface OnMessageFromServer {
+  fullName: string;
   message: string;
 }

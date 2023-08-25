@@ -2,17 +2,24 @@ import { Manager, Socket } from 'socket.io-client';
 import { OnMessageFromServer, OnNewClients } from './interfaces';
 
 
-export const connectToServer = () => {
+let socket: Socket;
 
-  const manager = new Manager('http://localhost:3000');
+export const connectToServer = ( token: string ) => {
 
-  const socket = manager.socket('/');
+  const manager = new Manager( 'http://localhost:3000', {
+    extraHeaders: {
+      authentication: token
+    }
+  });
+
+  socket?.removeAllListeners();
+  socket = manager.socket('/');
   
-  addListeners(socket);
+  addListeners();
 };
 
 
-const addListeners = ( socket: Socket ) => {
+const addListeners = () => {
 
   const serverStatusHtml = <HTMLSpanElement>document.querySelector('#server-status');
   const clientListHtml = <HTMLUListElement>document.querySelector('#clients-ul');
@@ -51,10 +58,13 @@ const addListeners = ( socket: Socket ) => {
   });
 
 
-  socket.on('message-from-server', ({ message }: OnMessageFromServer) => {
+  socket.on('message-from-server', ({ message, fullName }: OnMessageFromServer) => {
     
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${ message }</strong>`;
+    li.innerHTML = `
+      <strong>${ fullName }</strong>
+      <span>${ message }</span>
+    `;
 
     messagesListHtml.append(li);
   });
